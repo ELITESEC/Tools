@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Risk Management Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      max-width: 600px;
+      margin: auto;
+      background-color: #f0f0f0;
+    }
+    h1 {
+      text-align: center;
+    }
+    label, input {
+      display: block;
+      width: 100%;
+      margin: 0.5rem 0;
+    }
+    .result {
+      background-color: white;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>2% Risk Management Calculator</h1>
+
+  <label for="leverage">Leverage (X):</label>
+  <input type="number" id="leverage" value="10" step="1" min="1">
+
+  <label for="stoploss">Stop-Loss (% price change):</label>
+  <input type="number" id="stoploss" value="2" step="0.01" min="0.01">
+
+  <div class="result" id="resultBox"></div>
+
+  <script>
+    const resultBox = document.getElementById("resultBox");
+    const stoplossInput = document.getElementById("stoploss");
+    const leverageInput = document.getElementById("leverage");
+
+    const maxWalletRiskPct = 2; // Max 2% risk from wallet
+    const walletBalance = 100; // Represented as 100%
+
+    function calculate() {
+      const sl = parseFloat(stoplossInput.value);
+      const lev = parseFloat(leverageInput.value);
+
+      if (isNaN(sl) || sl <= 0 || isNaN(lev) || lev <= 0) {
+        resultBox.innerHTML = '<p>Please enter valid positive values for Leverage and Stop-Loss.</p>';
+        return;
+      }
+
+      // Correct calculation:
+      // SL% * Leverage = total percentage loss on the capital
+      // Capital % to use = maxWalletRiskPct / (SL% * Leverage)
+      const capitalToUsePct = maxWalletRiskPct / ((sl / 100) * lev);
+      const capitalUsd = (capitalToUsePct / 100) * walletBalance;
+
+      resultBox.innerHTML = `
+        <p><strong>Stop-Loss:</strong> ${sl.toFixed(2)}%</p>
+        <p><strong>Leverage:</strong> ${lev.toFixed(2)}x</p>
+        <p><strong>Capital to Use:</strong> ${capitalToUsePct.toFixed(2)}% of Wallet Balance</p>
+        <p><strong>Maximum Risk:</strong> ${maxWalletRiskPct}% of Wallet Balance</p>
+      `;
+    }
+
+    stoplossInput.addEventListener("input", calculate);
+    leverageInput.addEventListener("input", calculate);
+    calculate();
+  </script>
+</body>
+</html>
