@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Average Entry & Stop-Loss Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 2rem;
+      max-width: 700px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+    }
+    label, input {
+      display: block;
+      width: 100%;
+      margin: 0.5rem 0;
+    }
+    input {
+      padding: 0.5rem;
+    }
+    .result {
+      background: white;
+      margin-top: 1.5rem;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Average Entry & Stop-Loss Calculator</h1>
+
+  <label for="leverage">Leverage (X):</label>
+  <input type="number" id="leverage" value="10" min="1">
+
+  <label for="entry1">1st Entry Price ($):</label>
+  <input type="number" id="entry1" value="108582.8">
+
+  <label for="entry2">2nd Entry Price ($):</label>
+  <input type="number" id="entry2" value="108003">
+
+  <label for="size1">1st Order Size (% of wallet):</label>
+  <input type="number" id="size1" value="5" min="0">
+
+  <label for="size2">2nd Order Size (% of wallet):</label>
+  <input type="number" id="size2" value="5" min="0">
+
+  <label for="maxloss">Max Wallet Loss (%):</label>
+  <input type="number" id="maxloss" value="2" min="0">
+
+  <div class="result" id="results"></div>
+
+  <script>
+    const inputs = document.querySelectorAll('input');
+    const resultsDiv = document.getElementById('results');
+
+    function calculate() {
+      const lev = parseFloat(document.getElementById('leverage').value);
+      const e1 = parseFloat(document.getElementById('entry1').value);
+      const e2 = parseFloat(document.getElementById('entry2').value);
+      const s1 = parseFloat(document.getElementById('size1').value);
+      const s2 = parseFloat(document.getElementById('size2').value);
+      const maxLoss = parseFloat(document.getElementById('maxloss').value);
+
+      if ([lev, e1, e2, s1, s2, maxLoss].some(isNaN)) {
+        resultsDiv.innerHTML = '<p>Please fill out all fields with valid numbers.</p>';
+        return;
+      }
+
+      const totalSize = s1 + s2;
+      const avgEntry = ((e1 * s1) + (e2 * s2)) / totalSize;
+      const allowedMovePct = maxLoss / (totalSize * lev);
+      const stopLossPriceLong = avgEntry * (1 - allowedMovePct);
+      const stopLossPriceShort = avgEntry * (1 + allowedMovePct);
+
+      resultsDiv.innerHTML = `
+        <p><strong>Average Entry Price:</strong> $${avgEntry.toFixed(2)}</p>
+        <p><strong>Total Capital Used:</strong> ${totalSize.toFixed(2)}% of Wallet</p>
+        <p><strong>Max Allowed Move Against Position:</strong> ${(allowedMovePct * 100).toFixed(2)}%</p>
+        <p><strong>📉 Long Position Stop-Loss:</strong> $${stopLossPriceLong.toFixed(2)}</p>
+        <p><strong>📈 Short Position Stop-Loss:</strong> $${stopLossPriceShort.toFixed(2)}</p>
+      `;
+    }
+
+    inputs.forEach(input => input.addEventListener('input', calculate));
+    calculate();
+  </script>
+</body>
+</html>
